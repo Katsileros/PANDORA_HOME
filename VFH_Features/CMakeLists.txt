@@ -19,7 +19,7 @@ if(HDF5_FOUND)
   include_directories(${FLANN_INCLUDE_DIRS})
   include_directories(${HDF5_INCLUDE_DIR})
 
-  set( SRC src/vfh_features.cpp
+  set( SRC src/create_features.cpp
 		   src/main.cpp
 		 )    
   add_executable( ${PROJECT_NAME} ${SRC} )

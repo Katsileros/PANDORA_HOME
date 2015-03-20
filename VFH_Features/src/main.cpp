@@ -1,4 +1,4 @@
-#include "vfh_features.h"
+#include "create_features.h"
 
 int main(int argc, char **argv)
 {	

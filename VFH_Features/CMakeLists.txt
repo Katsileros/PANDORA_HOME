@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
-PROJECT(VFH_Features)
+PROJECT(create_Features)
 
 find_package( OpenCV REQUIRED )
 find_package( PCL 1.7 REQUIRED )
@@ -24,5 +24,10 @@ if(HDF5_FOUND)
 		 )    
   add_executable( ${PROJECT_NAME} ${SRC} )
   target_link_libraries( ${PROJECT_NAME}  ${OpenCV_LIBS} ${PCL_LIBRARIES} ${Boost_LIBRARIES} ${FLANN_LIBRARIES} ${HDF5_hdf5_LIBRARY} )
+  
+  add_executable(test_nearest_neighbors test_nearest_neighbors.cpp)
+  target_link_libraries(test_nearest_neighbors ${PCL_LIBRARIES} 
+                                        ${Boost_LIBRARIES} ${FLANN_LIBRARIES} ${HDF5_hdf5_LIBRARY} 
+                                        )
 
 endif(HDF5_FOUND)

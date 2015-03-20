@@ -69,7 +69,7 @@ void vfh_features::buildTree()
 		
 		this->vfh_compute();
 		
-		std::string ss2 = "models/" + boost::lexical_cast<std::string>(i+1) + "_VFH.pcd";
+		std::string ss2 = "models/" + boost::lexical_cast<std::string>(i) + "_VFH.pcd";
 		pcl::io::savePCDFileASCII (ss2, *this->getVFH());
 		//~ std::cout << "Saved " << ss2 << std::endl;
   }
@@ -83,7 +83,7 @@ void vfh_features::buildTree()
 	
   for(int i=0;i<num_;i++)
   {
-	std::string ss1 = "models/" + boost::lexical_cast<std::string>(i+1) + "_VFH.pcd";
+	std::string ss1 = "models/" + boost::lexical_cast<std::string>(i) + "_VFH.pcd";
 	if (pcl::io::loadPCDFile(ss1, *tmpVFH) == -1) //* load the file
 	{
 		std::cout << ("Couldn't read pcd file \n") << std::endl;

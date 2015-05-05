@@ -7,6 +7,13 @@
 #include <boost/lexical_cast.hpp>
 #include <vector>
 
+/*! 
+ *  \brief     This class implements pose estimation using a chessboard pattern
+ *  \author    Katsileros Petros
+ *  \date      13/12/2014
+ *  \bug       The chessboard pattern is symmetric and may cause problems
+ *  \copyright GNU Public License.
+ */
 
 /**
 @class poseEstimation

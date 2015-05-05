@@ -1,5 +1,12 @@
 #include "poseEstimation.h"
 
+/*! 
+ *  \brief     This class implements pose estimation using a chessboard pattern
+ *  \author    Katsileros Petros
+ *  \date      13/12/2014
+ *  \bug       The chessboard pattern is symmetric and may cause problems
+ *  \copyright GNU Public License.
+ */
 
 /**
 @brief Constructor. Reads the calibration and chessboard pattern parameters. 

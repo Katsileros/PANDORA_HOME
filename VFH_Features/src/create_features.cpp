@@ -1,19 +1,26 @@
 #include "create_features.h"
 
+/*! 
+ *  \brief     This class creates VFH features
+ *  \author    Katsileros Petros
+ *  \date      21/3/2015
+ *  \bug       Must define the input-output read & write folders and files
+ *  \copyright GNU Public License.
+ */
+
 /**
 @brief Constructor
 @param inputFolder: Contains the pcd training data files
 @param num: Number of pcd files, goind to be read
 **/
-vfh_features::vfh_features(std::string inputFolder,int num)
+vfh_features::vfh_features(int num)
 {
   cloud_.reset(new pcl::PointCloud<pcl::PointXYZ>());
   normals_.reset(new pcl::PointCloud<pcl::Normal> ());
   vfhs_.reset(new pcl::PointCloud<pcl::VFHSignature308> ());
   
   cloud_->points.resize (cloud_->width * cloud_->height); 
-  
-  folder_ = inputFolder;
+
   num_ = num;
 }
 
@@ -23,7 +30,7 @@ vfh_features::vfh_features(std::string inputFolder,int num)
 @return void
 **/
 void vfh_features::vfh_compute()
-{		
+{
   // Estimate the normals.
   pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normalEstimation;
   normalEstimation.setInputCloud(cloud_);
@@ -52,27 +59,32 @@ void vfh_features::vfh_compute()
 * the VFH descriptors using vfh_compute() func and saves the models.
 * Then saves the training data to files. 
 * Finally creates the kdtree index for the models.
+@param folder: The output save folder for the pcd VFH models
+@param filenam: The path of the ply files.
+* ex. For file bowl_1_0:8 filename is /folder_bowl/bowl_1_
 **/
-void vfh_features::buildTree()
+void vfh_features::buildTree(std::string folder,std::string filename)
 {
-	/// A folder with name models MUST exists.
-  mkdir("models", 0777);
+  /// A folder with name models MUST exists.
+  mkdir(folder.c_str(), 0777);
   
   for(int i=0;i<num_;i++)
   {
-		std::string ss1 = folder_ + "/apple/apple_1/apple_1_1_" + boost::lexical_cast<std::string>(i+1) + ".pcd";
+		std::string ss1 = filename + boost::lexical_cast<std::string>(i+1) + ".pcd";
 		
-		  if (pcl::io::loadPCDFile(ss1, *this->cloud_) == -1) //* load the file
-		  {
-				std::cout << ("Couldn't read pcd file \n") << std::endl;
-		  }
+		//~ if (pcl::io::loadPCDFile(ss1, *this->cloud_) == -1) //* load the file
+		if(pcl::io::loadPCDFile<pcl::PointXYZ> (ss1, *this->cloud_) == -1)
+		{
+			std::cout << ("Couldn't read pcd file \n") << std::endl;
+		}
 		
 		this->vfh_compute();
 		
-		std::string ss2 = "models/" + boost::lexical_cast<std::string>(i) + "_VFH.pcd";
-		pcl::io::savePCDFileASCII (ss2, *this->getVFH());
+		std::string ss2 = folder.c_str() + boost::lexical_cast<std::string>(i) + "_VFH.pcd";	
+		pcl::io::savePCDFileASCII (ss2.c_str(), *this->getVFH());	
 		//~ std::cout << "Saved " << ss2 << std::endl;
   }
+  
   
   pcl::console::print_highlight ("Saved %d VFH models in models folder.\n", (int)num_);
   
@@ -83,7 +95,7 @@ void vfh_features::buildTree()
 	
   for(int i=0;i<num_;i++)
   {
-	std::string ss1 = "models/" + boost::lexical_cast<std::string>(i) + "_VFH.pcd";
+	std::string ss1 = folder + boost::lexical_cast<std::string>(i) + "_VFH.pcd";
 	if (pcl::io::loadPCDFile(ss1, *tmpVFH) == -1) //* load the file
 	{
 		std::cout << ("Couldn't read pcd file \n") << std::endl;
@@ -100,9 +112,9 @@ void vfh_features::buildTree()
     //~ std::cout << std::endl;
   }
   
-  std::string kdtree_idx_file_name = "kdtree.idx";
-  std::string training_data_h5_file_name = "training_data.h5";
-  std::string training_data_list_file_name = "training_data.list";
+  std::string kdtree_idx_file_name = folder + "kdtree.idx";
+  std::string training_data_h5_file_name = folder + "training_data.h5";
+  std::string training_data_list_file_name = folder + "training_data.list";
   
   pcl::console::print_highlight ("Loaded %d VFH models. Creating training data %s/%s.\n", 
       (int)num_, training_data_h5_file_name.c_str (), training_data_list_file_name.c_str ());

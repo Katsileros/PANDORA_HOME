@@ -7,10 +7,19 @@
 #include <pcl/console/parse.h>
 #include <pcl/console/print.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/ply_io.h>
 #include <iostream>
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
 #include <boost/filesystem.hpp>
+
+/*! 
+ *  \brief     This function tests VFH-matching with KNN-algorithm 
+ *  \author    Katsileros Petros
+ *  \date      21/3/2015
+ *  \bug       Must define the input-output read & write folders and files
+ *  \copyright GNU Public License.
+ */
 
 typedef std::pair<std::string, std::vector<float> > vfh_model;
 
@@ -126,7 +135,17 @@ main (int argc, char** argv)
     pcl::console::print_value ("%f", thresh); pcl::console::print_info (")\n\n");
     return (-1);
   }
-
+  
+  // For visualization only. You must add the test file called in main for VFH test descriptors 
+  pcl::PointCloud<pcl::PointXYZ>::Ptr testPCD (new pcl::PointCloud<pcl::PointXYZ>);
+  if(pcl::io::loadPCDFile<pcl::PointXYZ> ("food_can/food_can_14/food_can_14_1_1.pcd", *testPCD) == -1)
+  {
+     std::cout << "ERROR : couldn't find file" << std::endl;
+  } 
+  
+  pcl::visualization::CloudViewer inputViewer ("Input - test Cloud Viewer");
+  inputViewer.showCloud (testPCD);
+  
   std::string extension (".pcd");
   transform (extension.begin (), extension.end (), extension.begin (), (int(*)(int))tolower);
 
@@ -144,16 +163,16 @@ main (int argc, char** argv)
   pcl::console::parse_argument (argc, argv, "-k", k);
   pcl::console::print_highlight ("Using "); pcl::console::print_value ("%d", k); pcl::console::print_info (" nearest neighbors.\n");
 
-  std::string kdtree_idx_file_name = "kdtree.idx";
-  std::string training_data_h5_file_name = "training_data.h5";
-  std::string training_data_list_file_name = "training_data.list";
+  std::string kdtree_idx_file_name = "train/kdtree.idx";
+  std::string training_data_h5_file_name = "train/training_data.h5";
+  std::string training_data_list_file_name = "train/training_data.list";
 
   std::vector<vfh_model> models;
   flann::Matrix<int> k_indices;
   flann::Matrix<float> k_distances;
   flann::Matrix<float> data;
   // Check if the data has already been saved to disk
-  if (!boost::filesystem::exists ("training_data.h5") || !boost::filesystem::exists ("training_data.list"))
+  if (!boost::filesystem::exists ("train/training_data.h5") || !boost::filesystem::exists ("train/training_data.list"))
   {
     pcl::console::print_error ("Could not find training data models files %s and %s!\n", 
         training_data_h5_file_name.c_str (), training_data_list_file_name.c_str ());
@@ -175,7 +194,7 @@ main (int argc, char** argv)
   }
   else
   {
-    flann::Index<flann::ChiSquareDistance<float> > index (data, flann::SavedIndexParams ("kdtree.idx"));
+    flann::Index<flann::ChiSquareDistance<float> > index (data, flann::SavedIndexParams ("train/kdtree.idx"));
     index.buildIndex ();
     nearestKSearch (index, histogram, k, k_indices, k_distances);
   }
@@ -206,13 +225,15 @@ main (int argc, char** argv)
       m++;
     }
 	  
-    std::string cloud_name = "rgbd-dataset/apple/apple_1/apple_1_1_" + boost::lexical_cast<std::string>(k_indices[0][i]+1) + ".pcd";
+    std::string cloud_name = "food_can/food_can_1/food_can_1_1_" + boost::lexical_cast<std::string>(k_indices[0][i]+1) + ".pcd";
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
     pcl::console::print_highlight (stderr, "Loading "); 
     pcl::console::print_value (stderr, "%s ", cloud_name.c_str ());
     if (pcl::io::loadPCDFile (cloud_name, *cloud) == -1)
       break; 
+    //~ if (pcl::io::loadPLYFile (cloud_name, *cloud) == -1)
+      //~ break;
     
 
     if (cloud->points.size () == 0)
@@ -261,8 +282,11 @@ main (int argc, char** argv)
   
   // Add coordianate systems to all viewports
   viewer.addCoordinateSystem (0.1, 0);
-  
   viewer.spin();
+  
+  while (!inputViewer.wasStopped ())
+  {
+  }
  
   return (0);
 }

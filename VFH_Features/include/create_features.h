@@ -10,6 +10,7 @@
 #include <pcl/visualization/histogram_visualizer.h>
 #include <pcl/console/parse.h>
 #include <pcl/console/print.h>
+#include <pcl/io/ply_io.h>
 
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
@@ -18,6 +19,13 @@
 #include <iostream>
 #include <fstream>
 
+/*! 
+ *  \brief     This class creates VFH features
+ *  \author    Katsileros Petros
+ *  \date      21/3/2015
+ *  \bug       Must define the input-output read & write folders and files
+ *  \copyright GNU Public License.
+ */
 
 /**
 @class vfh_features
@@ -33,8 +41,6 @@ class vfh_features{
 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ ;
   		//!< The normals of the given input
   		pcl::PointCloud<pcl::Normal>::Ptr normals_;
-  		//!< The folder containing the trainind pcd-data files
-  		std::string folder_;
   		//!< Number of training data
   		int num_;
 	
@@ -44,7 +50,7 @@ class vfh_features{
 		@param inputFolder: Contains the pcd training data files
 		@param num: Number of pcd files, goind to be read
 		**/
-		vfh_features(std::string inputFolder,int num);
+		vfh_features(int num);
 		
 		/**
 		@brief Destructor
@@ -66,6 +72,8 @@ class vfh_features{
 		* the VFH descriptors using vfh_compute() func and saves the models.
 		* Then saves the training data to files. 
 		* Finally creates the kdtree index for the models.
+		@param folder: The output save folder for the pcd VFH models
+		@param filenam: The path of the ply files.
 		**/
-		void buildTree();
+		void buildTree(std::string folder, std::string filename);
 };

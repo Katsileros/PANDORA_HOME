@@ -61,8 +61,8 @@ loadHist (const boost::filesystem::path &path, pfh_model &pfh)
   // This is the max size of a pfh feature
   pfh.second.resize (33*308);
   
-  std::cout << fields[pfh_idx].count << std::endl;
-  std::cout << point.points.size() << std::endl;
+  //~ std::cout << fields[pfh_idx].count << std::endl;
+  //~ std::cout << point.points.size() << std::endl;
 
   for(int k=0;k<point.points.size();k++)
   {

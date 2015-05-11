@@ -17,7 +17,6 @@
  *  \brief     This function tests PFH-matching with KNN-algorithm 
  *  \author    Katsileros Petros
  *  \date      5/5/2015
- *  \bug       FLANN::Matrix is fixed sized to the upper bound
  *  \copyright GNU Public License.
  */
 
@@ -51,7 +50,7 @@ loadHist (const boost::filesystem::path &path, pfh_model &pfh)
     return (false);
   }
   
-  // Treat the VFH signature as a single Point Cloud
+  // Treat the PFH signature as a single Point Cloud
   pcl::PointCloud <pcl::FPFHSignature33> point;
   pcl::io::loadPCDFile (path.string (), point);
   
@@ -59,18 +58,16 @@ loadHist (const boost::filesystem::path &path, pfh_model &pfh)
   std::vector <pcl::PCLPointField> fields;
   getFieldIndex (point, "fpfh", fields);
   // This is the max size of a pfh feature
-  pfh.second.resize (33*308);
+  pfh.second.resize (33);
   
   //~ std::cout << fields[pfh_idx].count << std::endl;
   //~ std::cout << point.points.size() << std::endl;
 
-  for(int k=0;k<point.points.size();k++)
+  for (size_t i = 0; i < fields[pfh_idx].count; ++i)
   {
-	for (size_t i = 0; i < fields[pfh_idx].count; ++i)
-	{
-		pfh.second[k*fields[pfh_idx].count] = point.points[k].histogram[i];
-	}
+	pfh.second[i] = point.points[0].histogram[i];
   }
+
   //~ std::cout << pfh.second.size() << std::endl;
   pfh.first = path.string ();
   return (true);

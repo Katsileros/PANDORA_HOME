@@ -11,6 +11,7 @@
 #include <pcl/console/parse.h>
 #include <pcl/console/print.h>
 #include <pcl/io/ply_io.h>
+#include <pcl/filters/approximate_voxel_grid.h>
 
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
@@ -23,7 +24,6 @@
  *  \brief     This class creates PFH features
  *  \author    Katsileros Petros
  *  \date      5/5/2015
- *  \bug       FLANN::Matrix is fixed sized to the upper bound
  *  \copyright GNU Public License.
  */
 
@@ -76,4 +76,6 @@ class pfh_features{
 		@param filenam: The path of the ply files.
 		**/
 		void buildTree(std::string folder, std::string filename);
+		
+		void meanFPFHValue(pcl::PointCloud<pcl::FPFHSignature33>::Ptr meanFPFH);
 };

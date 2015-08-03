@@ -23,12 +23,6 @@
 #include <pcl/io/vtk_lib_io.h> 
 #include <pcl/visualization/cloud_viewer.h>
 
-#include "opencv/cv.h"
-#include "opencv2/opencv.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/core/core.hpp"
-
 #include <boost/filesystem.hpp>
 #include <vector>
 #include <iostream>
@@ -47,7 +41,7 @@
 * matrices for the specified data folder and make the appropriate transformations
 * using Vtk rendering code.
 * This code is implemented specifically for Linemod database.
-* As input takes the Linemod object data folder
+* As input takes the Linemod object data folder and how many poses to use
 * As output, writes the rendered-poses in point cloud data form (.pcd)
 **/
 
@@ -70,11 +64,12 @@ int main(int argc, char **argv)
 
     mkdir("poses", 0777);
     
-    if (argc != 2) {
-    printf("Usage: %s folder\n"
+    if (argc != 3) {
+    printf("Usage: %s folder N\n"
            " where\n"
            " folder : Linemod object-data folder \n"
-           "ex: ./Rendering driller/data"
+           " and N the number of data images"
+           " ex: ./Rendering driller/data 3"
 	   , argv[0]);
     
     return (1);

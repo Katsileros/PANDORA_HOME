@@ -43,10 +43,10 @@
  */
  
  /**
-@brief With Vtk library, read the R-(Rotation) and T-(Translation) 
-* matrices for the specified data folder and make the appropriate transformation
-* with Vtk rendering code. 
-* This code is implemented specifically for Linemod data base.
+@brief Using Vtk library, read the R-(Rotation) and T-(Translation) 
+* matrices for the specified data folder and make the appropriate transformations
+* using Vtk rendering code.
+* This code is implemented specifically for Linemod database.
 * As input takes the Linemod object data folder
 * As output, writes the rendered-poses in point cloud data form (.pcd)
 **/

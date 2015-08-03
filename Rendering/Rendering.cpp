@@ -35,11 +35,25 @@
 #include <string>
 #include <fstream>
 
-vtkSmartPointer<vtkMatrix4x4> readPose(std::string foldername,int k);
-vtkSmartPointer<vtkMatrix4x4> readTransofrm(std::string folder);
-cv::Mat loadDepth( std::string a_name , std::string filename);
+/*! 
+ *  \brief     Rendering code for Linemod database
+ *  \author    Katsileros Petros
+ *  \date      3/8/2015
+ *  \copyright GNU Public License.
+ */
+ 
+ /**
+@brief With Vtk library, read the R-(Rotation) and T-(Translation) 
+* matrices for the specified data folder and make the appropriate transformation
+* with Vtk rendering code. 
+* This code is implemented specifically for Linemod data base.
+* As input takes the Linemod object data folder
+* As output, writes the rendered-poses in point cloud data form (.pcd)
+**/
 
-int main(int, char *[])
+vtkSmartPointer<vtkMatrix4x4> readPose(std::string foldername,int k);
+
+int main(int argc, char **argv)
 {
 	//!< set virtual camera parameters
     const double zNear = 0.1;//!< near clipping plane
@@ -55,6 +69,16 @@ int main(int, char *[])
     camera->SetViewAngle( fovy * 180/M_PI );
 
     mkdir("poses", 0777);
+    
+    if (argc != 2) {
+    printf("Usage: %s folder\n"
+           " where\n"
+           " folder : Linemod object-data folder \n"
+           "ex: ./Rendering driller/data"
+	   , argv[0]);
+    
+    return (1);
+  }
     
 	//!< load Data
 	vtkSmartPointer<vtkPLYReader> reader =
@@ -118,13 +142,18 @@ int main(int, char *[])
 	windowToImageFilter->SetMagnification(1); //set the resolution of the output image ('x1' times the current resolution of vtk render window)
 	windowToImageFilter->Update();
 	
-	vtkSmartPointer<vtkPLYWriter> writer = vtkSmartPointer<vtkPLYWriter>::New();
+	std::string filename = "poses/renderedPose" + boost::lexical_cast<std::string>(k) + ".pcd";
 	
-	std::string filename = "poses/screenshot" + boost::lexical_cast<std::string>(k) + ".ply";
-	writer->SetFileName(filename.c_str());
-	writer->SetFileTypeToASCII();
-	writer->SetInputConnection(KinectTransformFilter->GetOutputPort());
-	writer->Write(); 
+    vtkSmartPointer<vtkPolyData> mesh = KinectTransformFilter->GetOutput();
+	
+	pcl::PolygonMesh meshPcl;
+    pcl::VTKUtils::vtk2mesh(mesh,meshPcl);
+	
+	pcl::PointCloud<pcl::PointXYZ> cloud;
+	pcl::fromPCLPointCloud2(meshPcl.cloud, cloud);
+	
+	pcl::io::savePCDFileASCII (filename, cloud);
+	std::cout << "Saved: %s point cloud rendered-pose" << filename << std::endl;
 	
 	//~ renderWindowInteractor->Start();
 	
@@ -206,4 +235,3 @@ vtkSmartPointer<vtkMatrix4x4> readPose(std::string foldername,int k)
 	return m;
 	
 }
-

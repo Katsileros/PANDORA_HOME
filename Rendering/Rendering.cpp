@@ -61,32 +61,42 @@ int main(int argc, char **argv)
     //!< approximate the transform of xtion to virtual camera
     camera->SetClippingRange(zNear, zFar);
     camera->SetViewAngle( fovy * 180/M_PI );
-
-    mkdir("poses", 0777);
+	
+    std::string folder = argv[1];
+	std::cout << "Data folder: " << folder << std::endl; 
+	int N = atoi(argv[2]);
+	std::cout << "Number of image data: " << N << std::endl;
+	
+	std::string folderPoses = folder + "RenderedPoses";
+    mkdir(folderPoses.c_str(), 0777);
     
     if (argc != 3) {
     printf("Usage: %s folder N\n"
            " where\n"
            " folder : Linemod object-data folder \n"
-           " and N the number of data images"
+           " and N the number of data images \n"
            " ex: ./Rendering driller/data 3"
 	   , argv[0]);
     
     return (1);
-  }
-    
+    }
+	
 	//!< load Data
 	vtkSmartPointer<vtkPLYReader> reader =
     vtkSmartPointer<vtkPLYReader>::New();
-	reader->SetFileName("driller/mesh.ply");
+    
+    std::string meshFile = folder + "mesh.ply";
+   
+	reader->SetFileName(meshFile.c_str());
 	reader->Update();
 
-    for(int k=0;k<3;k++)
+    for(int k=0;k<N;k++)
     {	
      
     vtkSmartPointer<vtkMatrix4x4> m = vtkSmartPointer<vtkMatrix4x4>::New();
-    std::string foldername = "driller/data/";
-	m = readPose(foldername,k);
+    std::string dataFolder = folder + "data/";
+
+	m = readPose(dataFolder,k);
     
     vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     transformFilter->SetInputConnection(reader->GetOutputPort());
@@ -137,18 +147,17 @@ int main(int argc, char **argv)
 	windowToImageFilter->SetMagnification(1); //set the resolution of the output image ('x1' times the current resolution of vtk render window)
 	windowToImageFilter->Update();
 	
-	std::string filename = "poses/renderedPose" + boost::lexical_cast<std::string>(k) + ".pcd";
+	std::string outputFilename = folder + "RenderedPoses/" + "renderedPose" + boost::lexical_cast<std::string>(k) + std::string(".pcd");
 	
     vtkSmartPointer<vtkPolyData> mesh = KinectTransformFilter->GetOutput();
-	
 	pcl::PolygonMesh meshPcl;
     pcl::VTKUtils::vtk2mesh(mesh,meshPcl);
 	
 	pcl::PointCloud<pcl::PointXYZ> cloud;
 	pcl::fromPCLPointCloud2(meshPcl.cloud, cloud);
 	
-	pcl::io::savePCDFileASCII (filename, cloud);
-	std::cout << "Saved: %s point cloud rendered-pose" << filename << std::endl;
+	pcl::io::savePCDFileASCII (outputFilename, cloud);
+	std::cout << "Saved: " << outputFilename << std::endl;
 	
 	//~ renderWindowInteractor->Start();
 	

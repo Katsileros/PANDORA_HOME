@@ -34,24 +34,47 @@ void pfh_features::pfh_compute()
   // Filtering input scan to roughly 10% of original size to increase speed of registration.
   pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::ApproximateVoxelGrid<pcl::PointXYZ> approximate_voxel_filter;
-  approximate_voxel_filter.setLeafSize (0.02, 0.02, 0.02);
+  approximate_voxel_filter.setLeafSize (9, 9, 9);
   approximate_voxel_filter.setInputCloud (cloud_);
   approximate_voxel_filter.filter (*filtered_cloud);
-  //~ std::cout << "Filtered cloud contains " << filtered_cloud->size() << std::endl;
+  //~ std::cout << "Input cloud contains " << cloud_->size() << " points." << std::endl;
+  //~ std::cout << "Filtered cloud contains " << filtered_cloud->size() << " points." << std::endl;
 
   // Estimate the normals.
   pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimation;
   normalEstimation.setInputCloud(filtered_cloud);
-  normalEstimation.setRadiusSearch(0.03);
+  normalEstimation.setRadiusSearch(12);
   pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
   normalEstimation.setSearchMethod(kdtree);
   normalEstimation.compute(*normals_);
+  
+  //~ std::cout << "Normals contains " << normals_->size() << " points." << std::endl;
+  
+  // --------------------------------------------------------
+  // -----Open 3D viewer and add point cloud and normals-----
+  // --------------------------------------------------------
+  //~ boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+  //~ viewer->setBackgroundColor (0, 0, 0);
+  //~ viewer->addPointCloud<pcl::PointXYZ> (filtered_cloud, "sample cloud");
+  //~ viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "sample cloud");
+  //~ viewer->addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (filtered_cloud, normals_, 10, 0.05, "normals");
+  //~ viewer->addCoordinateSystem (1.0);
+  //~ viewer->initCameraParameters ();
+  //~ 
+  //~ while (!viewer->wasStopped ())
+  //~ {
+    //~ viewer->spinOnce (100);
+    //~ boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+  //~ }
+   
+   //~ exit(0);
   
   for (int i = 0; i < normals_->points.size(); i++)
   {
 	if (!pcl::isFinite<pcl::Normal>(normals_->points[i]))
     {
 		PCL_WARN("normals[%d] is not finite\n", i);
+		PCL_ERROR("%f \n",(normals_->points[i]));
     }
   }
  
@@ -83,9 +106,8 @@ void pfh_features::buildTree(std::string folder,std::string filename)
   
   for(int i=0;i<num_;i++)
   {
-		std::string ss1 = filename + boost::lexical_cast<std::string>(i+1) + ".pcd";
+		std::string ss1 = filename + boost::lexical_cast<std::string>(i) + ".pcd";
 		
-		//~ if (pcl::io::loadPCDFile(ss1, *this->cloud_) == -1) //* load the file
 		if(pcl::io::loadPCDFile<pcl::PointXYZ> (ss1, *this->cloud_) == -1)
 		{
 			std::cout << ("Couldn't read pcd file \n") << std::endl;
@@ -166,8 +188,3 @@ void pfh_features::meanFPFHValue(pcl::PointCloud<pcl::FPFHSignature33>::Ptr mean
 	}
 	
 }
-
-
-
-
-

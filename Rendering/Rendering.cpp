@@ -49,6 +49,17 @@ vtkSmartPointer<vtkMatrix4x4> readPose(std::string foldername,int k);
 
 int main(int argc, char **argv)
 {
+	if (argc != 3) {
+       printf("Usage: %s folder N\n"
+       " where\n"
+       " folder : Linemod object-data folder \n"
+       " and N the number of data images \n"
+       " ex: ./Rendering driller/data 3"
+	   , argv[0]);
+    
+    return (1);
+    }
+	
 	//!< set virtual camera parameters
     const double zNear = 0.1;//!< near clipping plane
     const double zFar = 10000.0;//!< far clipping plane
@@ -69,17 +80,6 @@ int main(int argc, char **argv)
 	
 	std::string folderPoses = folder + "RenderedPoses";
     mkdir(folderPoses.c_str(), 0777);
-    
-    if (argc != 3) {
-    printf("Usage: %s folder N\n"
-           " where\n"
-           " folder : Linemod object-data folder \n"
-           " and N the number of data images \n"
-           " ex: ./Rendering driller/data 3"
-	   , argv[0]);
-    
-    return (1);
-    }
 	
 	//!< load Data
 	vtkSmartPointer<vtkPLYReader> reader =
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     std::string dataFolder = folder + "data/";
 
 	m = readPose(dataFolder,k);
-    
+	    
     vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     transformFilter->SetInputConnection(reader->GetOutputPort());
     

@@ -30,16 +30,22 @@ pfh_features::pfh_features(int num)
 **/
 void pfh_features::pfh_compute()
 {
-  // Sub-sampling to the input cloud
-  // Filtering input scan to roughly 10% of original size to increase speed of registration.
   pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud (new pcl::PointCloud<pcl::PointXYZ>);
-  pcl::ApproximateVoxelGrid<pcl::PointXYZ> approximate_voxel_filter;
-  approximate_voxel_filter.setLeafSize (9, 9, 9);
-  approximate_voxel_filter.setInputCloud (cloud_);
-  approximate_voxel_filter.filter (*filtered_cloud);
-  //~ std::cout << "Input cloud contains " << cloud_->size() << " points." << std::endl;
-  //~ std::cout << "Filtered cloud contains " << filtered_cloud->size() << " points." << std::endl;
+  std::cout << "Input cloud contains " << cloud_->size() << " points." << std::endl;
+  
+  // Uniform sampling object.
+  pcl::UniformSampling<pcl::PointXYZ> filter;
+  filter.setInputCloud(cloud_);
+  // We set the size of every voxel to be 1x1x1cm
+  // (only one point per every cubic centimeter will survive).
+  filter.setRadiusSearch(10.0f);
+  // We need an additional object to store the indices of surviving points.
+  pcl::PointCloud<int> keypointIndices;
 
+  filter.compute(keypointIndices);
+  pcl::copyPointCloud(*cloud_, keypointIndices.points, *filtered_cloud);
+  std::cout << "Filtered cloud contains " << filtered_cloud->size() << " points." << std::endl;
+  
   // Estimate the normals.
   pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> normalEstimation;
   normalEstimation.setInputCloud(filtered_cloud);
@@ -47,20 +53,16 @@ void pfh_features::pfh_compute()
   pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZ>);
   normalEstimation.setSearchMethod(kdtree);
   normalEstimation.compute(*normals_);
-  
   //~ std::cout << "Normals contains " << normals_->size() << " points." << std::endl;
   
-  // --------------------------------------------------------
-  // -----Open 3D viewer and add point cloud and normals-----
-  // --------------------------------------------------------
+  //~ // --------------------------------------------------------
+  //~ // -----Open 3D viewer and add point cloud and normals-----
+  //~ // --------------------------------------------------------
   //~ boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
   //~ viewer->setBackgroundColor (0, 0, 0);
   //~ viewer->addPointCloud<pcl::PointXYZ> (filtered_cloud, "sample cloud");
   //~ viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "sample cloud");
-  //~ viewer->addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (filtered_cloud, normals_, 10, 0.05, "normals");
-  //~ viewer->addCoordinateSystem (1.0);
-  //~ viewer->initCameraParameters ();
-  //~ 
+  
   //~ while (!viewer->wasStopped ())
   //~ {
     //~ viewer->spinOnce (100);
@@ -114,15 +116,10 @@ void pfh_features::buildTree(std::string folder,std::string filename)
 		}
 		
 		this->pfh_compute();
-		
-		/// Find the mean FPFH vector, of all the cloud points
-		pcl::PointCloud<pcl::FPFHSignature33>::Ptr meanFPFH (new pcl::PointCloud<pcl::FPFHSignature33>());
-		this->meanFPFHValue(meanFPFH);
-		meanFPFH->points.resize (meanFPFH->width * meanFPFH->height);
 				
 		/// Write the file with FPFH to disk
 		std::string ss2 = folder.c_str() + boost::lexical_cast<std::string>(i) + "_PFH.pcd";	
-		pcl::io::savePCDFileASCII (ss2.c_str(), *meanFPFH);	
+		pcl::io::savePCDFileASCII (ss2.c_str(), *pfhs_);	
 		//~ std::cout << "Saved " << ss2 << std::endl;
   }
   
@@ -172,19 +169,8 @@ void pfh_features::buildTree(std::string folder,std::string filename)
   delete[] data.ptr ();
 }
 
-void pfh_features::meanFPFHValue(pcl::PointCloud<pcl::FPFHSignature33>::Ptr meanFPFH)
-{
-	meanFPFH->width  = 1;
-	meanFPFH->height = 1;
-	meanFPFH->points.resize(33);
-	
-	for(int j=0;j<33;j++)
-	{
-		for(int i=0;i<pfhs_->size();i++)
-		{
-			meanFPFH->points[0].histogram[j] = meanFPFH->points[0].histogram[j] + pfhs_->points[i].histogram[j];
-		}
-		meanFPFH->points[0].histogram[j] = (float) ( meanFPFH->points[0].histogram[j] / pfhs_->size() );
-	}
-	
-}
+
+/// Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+///	transform.rotate (Eigen::AngleAxisf (-180, Eigen::Vector3f::UnitX()));
+///	pcl::transformPointCloud (*inputCloud, *inputCloud, transform);
+  

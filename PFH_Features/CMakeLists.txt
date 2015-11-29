@@ -25,9 +25,9 @@ if(HDF5_FOUND)
   add_executable( ${PROJECT_NAME} ${SRC} )
   target_link_libraries( ${PROJECT_NAME}  ${OpenCV_LIBS} ${PCL_LIBRARIES} ${Boost_LIBRARIES} ${FLANN_LIBRARIES} ${HDF5_hdf5_LIBRARY} )
   
-  add_executable(test_nearest_neighbors test_nearest_neighbors.cpp)
-  target_link_libraries(test_nearest_neighbors ${PCL_LIBRARIES} 
-                                        ${Boost_LIBRARIES} ${FLANN_LIBRARIES} ${HDF5_hdf5_LIBRARY} 
-                                        )
+  add_executable(test_Features src/test_Features.cpp src/create_features.cpp)
+  target_link_libraries(test_Features ${PCL_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS} ${FLANN_LIBRARIES} ${HDF5_hdf5_LIBRARY} )
 
+  add_executable(transform2pcd src/transform2pcd.cpp)
+  target_link_libraries(transform2pcd ${PCL_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES})
 endif(HDF5_FOUND)

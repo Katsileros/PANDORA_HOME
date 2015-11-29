@@ -12,6 +12,8 @@
 #include <pcl/console/print.h>
 #include <pcl/io/ply_io.h>
 #include <pcl/filters/approximate_voxel_grid.h>
+#include <pcl/keypoints/uniform_sampling.h>
+#include <pcl/common/transforms.h>
 
 #include <flann/flann.h>
 #include <flann/io/hdf5.h>
@@ -77,5 +79,18 @@ class pfh_features{
 		**/
 		void buildTree(std::string folder, std::string filename);
 		
+		/**
+		 * Mean value of the PFH features
+		 **/ 
 		void meanFPFHValue(pcl::PointCloud<pcl::FPFHSignature33>::Ptr meanFPFH);
+		
+		/**
+		 * Take the input scene(input frame) and split it to several windows.
+		 * For every window calculate the mean PFH-feature and save it
+		 * in order to make the comparison with the training features
+		@param Input: The overall point cloud of the input scene
+		@param Input: The folder name
+		@param Output: (40x40)-points PointClouds of the input scene 
+		**/
+		void inputForTesting(pcl::PointCloud<pcl::PointXYZ>::Ptr inputCloud,std::string folder);
 };

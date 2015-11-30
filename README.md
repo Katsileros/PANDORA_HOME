@@ -1,2 +1,2 @@
-PANDORA_HOME
+PANDORA@HOME Aristotle University of Thessaloniki Robotics team
 ============
